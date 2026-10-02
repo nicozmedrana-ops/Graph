@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Graph.java walkthrough</title>
+<style>
+:root{--bg:#f3f6f4;--panel:#fff;--ink:#17261f;--mut:#5d6f66;--line:#d3ddd7;--hl:#fff1b8;--hlb:#e0a800;--acc:#0f7a5a;--bad:#c2410c;--code:#1b2a24;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root:not([data-theme="light"]){}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1713;--panel:#17231d;--ink:#e6efe9;--mut:#93a89c;--line:#2a3b32;--hl:#4a3f10;--hlb:#e0b020;--acc:#3ecf9e;--bad:#fb923c;--code:#e6efe9}}
+:root[data-theme="dark"]{--bg:#0f1713;--panel:#17231d;--ink:#e6efe9;--mut:#93a89c;--line:#2a3b32;--hl:#4a3f10;--hlb:#e0b020;--acc:#3ecf9e;--bad:#fb923c;--code:#e6efe9}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Trebuchet MS",Verdana,sans-serif}
+main{max-width:1200px;margin:0 auto;padding:16px;display:grid;gap:14px;grid-template-columns:1.15fr 1fr}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-width:0}
+h1{font-size:18px;margin:0;padding:12px 16px;border-bottom:1px solid var(--line)}
+#code{margin:0;padding:8px 0;max-height:520px;overflow:auto;font:13.5px/1.6 Consolas,Menlo,monospace;color:var(--code)}
+.ln{display:block;padding:0 14px 0 0;white-space:pre;border-left:4px solid transparent}
+.ln b{display:inline-block;width:40px;text-align:right;margin-right:14px;color:var(--mut);font-weight:400}
+.ln.on{background:var(--hl);border-left-color:var(--hlb)}
+.cm{color:var(--mut)}
+#title{font-size:20px;margin:0 0 6px}
+#txt{margin:0;color:var(--ink);font-size:17px}
+#info{padding:14px 16px}
+#call{font:14px Consolas,Menlo,monospace;color:var(--acc);margin:0 0 8px}
+svg{display:block;width:100%;height:auto}
+#lists{padding:10px 16px;border-top:1px solid var(--line);font:14px Consolas,Menlo,monospace;color:var(--mut);min-height:64px}
+#nav{display:flex;gap:8px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
+button{font:inherit;padding:8px 16px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+button:focus-visible{outline:3px solid var(--hlb)}
+#ct{margin-left:auto;color:var(--mut);font-size:14px}
+.nd circle{fill:var(--panel);stroke:var(--acc);stroke-width:2.5}
+.nd text{font:700 18px "Trebuchet MS",sans-serif;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.nd.hl circle{fill:var(--hl);stroke:var(--hlb);stroke-width:4}
+.nd.gh circle{stroke:var(--bad);stroke-dasharray:5 4;fill:none}
+.nd.gh text{fill:var(--bad)}
+.nd.ok circle{fill:var(--acc);stroke:var(--acc)}.nd.ok text{fill:#fff}
+.ed{stroke:var(--acc);stroke-width:3}.ed.hl{stroke:var(--hlb);stroke-width:5}
+.lbl{font:600 14px "Trebuchet MS",sans-serif;fill:var(--mut);text-anchor:middle}
+</style></head><body>
+<main>
+<section class="card"><h1>Graph.java</h1><pre id="code"></pre></section>
+<section class="card">
+<div id="info"><p id="call"></p><h2 id="title"></h2><p id="txt"></p></div>
+<svg id="g" viewBox="0 0 340 230" role="img" aria-label="Graph of buildings"></svg>
+<div id="lists"></div>
+<div id="nav"><button id="pv">Back</button><button id="nx" class="p">Next</button><button id="ap">Auto-play</button><span id="ct"></span></div>
+</section>
+</main>
+<script>
+const CODE=`package GraphPracSet;
+
+public class Graph {
+
+    private List vertices;
+
+    public Graph() {
+        this.vertices = new List();
+    }
+
+    // adds a building to the graph
+    public void addVertex(int data) {
+        Vertex vertex = new Vertex(data);
+        vertices.add(vertex);
+    }
+
+    // adds a connection between two buildings
+    public void addEdge(int data1, int data2) {
+        Vertex v1 = findVertex(data1);
+        Vertex v2 = findVertex(data2);
+
+        if (v1 != null && v2 != null) {
+            v1.getNeighbors().add(v2);
+            v2.getNeighbors().add(v1);
+        } else {
+            System.out.println("One or more vertices not found.");
+        }
+    }
+
+    // finds a building by its ID
+    public Vertex findVertex(int data) {
+        for (int i = 0; i < vertices.getSize(); i++) {
+            if (vertices.getVertex(i).getData() == data) {
+                return vertices.getVertex(i);
+            }
+        }
+        return null;
+    }
+
+    // OUTPUT 4: checks if two buildings are directly connected
+    public void checkDirectConnection(int building1, int building2) {
+
+        Vertex v1 = findVertex(building1);
+        Vertex v2 = findVertex(building2);
+
+        // both buildings must exist
+        if (v1 == null || v2 == null) {
+            System.out.println("One or both buildings do not exist.");
+            return;
+        }
+
+        boolean connected = false;
+        List neighbors = v1.getNeighbors();
+
+        // look for building2 in the neighbors of building1
+        for (int i = 0; i < neighbors.getSize(); i++) {
+            if (neighbors.getVertex(i).getData() == building2) {
+                connected = true;
+                break;
+            }
+        }
+
+        if (connected) {
+            System.out.println("Building " + building1 + " and Building " + building2 + " are directly connected.");
+        } else {
+            System.out.println("Building " + building1 + " and Building " + building2 + " are not directly connected.");
+        }
+    }
+}`.split("\n");
+const P={1:[70,60],2:[270,60],3:[170,170],9:[270,170]};
+// s: [from,to,title,text,call,nodes,edges,hl,hlEdge,ghost,ok]
+const S=[
+[1,3,"The Graph class","A graph is a map of buildings (vertices) and the paths between them (edges). This class stores and manages that map.","",[],[],[]],
+[5,5,"The vertex list","One field: vertices. It is a custom List holding every building. Each building also keeps its own list of neighbors.","",[],[],[]],
+[7,9,"Constructor","Creating a Graph builds an empty List. No buildings, no connections yet.","new Graph()",[],[],[]],
+[12,13,"addVertex: make a building","Takes a building ID and wraps it in a new Vertex object. The node exists in memory but is not in the graph yet.","addVertex(1)",[1],[],[1]],
+[14,14,"addVertex: store it","vertices.add() puts the new Vertex into the list. Repeat the call for 2 and 3 and all three buildings are in the graph.","addVertex(1); addVertex(2); addVertex(3)",[1,2,3],[],[]],
+[18,20,"addEdge: find both buildings","addEdge receives two IDs. It calls findVertex twice to get the actual Vertex objects (or null if an ID is missing).","addEdge(1, 2)",[1,2,3],[],[1,2]],
+[22,24,"addEdge: connect both ways","If both exist, each building adds the other to its neighbor list. This makes the edge undirected: 1 knows 2 and 2 knows 1.","addEdge(1, 2)",[1,2,3],[[1,2]],[1,2],[1,2]],
+[25,27,"addEdge: missing building","If either ID is not found, nothing is connected. A message is printed instead. Here building 9 does not exist.","addEdge(1, 9)",[1,2,3],[[1,2]],[1],null,9],
+[31,32,"findVertex: scan the list","Loop from index 0 up to the list size. i is the position we are checking right now.","findVertex(3)",[1,2,3],[[1,2]],[1]],
+[33,35,"findVertex: match found","vertices.getVertex(i) gets the building at position i. If its ID equals data, return that Vertex immediately.","findVertex(3)",[1,2,3],[[1,2]],[3],null,null,[3]],
+[37,37,"findVertex: not found","If the loop ends without a match, the building does not exist and the method returns null. Callers must check for it.","findVertex(9)",[1,2,3],[[1,2]],[],null,9],
+[41,44,"checkDirectConnection: look up","Takes two building IDs and finds both Vertex objects with findVertex.","checkDirectConnection(1, 2)",[1,2,3],[[1,2]],[1,2]],
+[46,50,"Guard clause","If either building is null, print an error and return early. Nothing below runs, which prevents a crash.","checkDirectConnection(1, 9)",[1,2,3],[[1,2]],[1],null,9],
+[52,53,"Set up the search","connected starts as false. neighbors is building 1's neighbor list: the only buildings it is directly linked to.","checkDirectConnection(1, 2)",[1,2,3],[[1,2]],[1,2],[1,2]],
+[55,61,"Search the neighbors","Loop through building 1's neighbors. If one has the ID building2, set connected to true and break. Only direct neighbors are checked, not friends of friends.","checkDirectConnection(1, 2)",[1,2,3],[[1,2]],[1,2],[1,2],null,[2]],
+[63,67,"Print: connected","connected is true, so the first branch runs.\nOutput: Building 1 and Building 2 are directly connected.","checkDirectConnection(1, 2)",[1,2,3],[[1,2]],[1,2],[1,2],null,[1,2]],
+[63,67,"Print: not connected","For 1 and 3 the neighbor list of 1 holds only 2, so connected stays false and the else branch runs.\nOutput: Building 1 and Building 3 are not directly connected.","checkDirectConnection(1, 3)",[1,3,2],[[1,2]],[1,3],null,null,null]
+];
+const $=id=>document.getElementById(id);
+const code=$("code");
+CODE.forEach((t,i)=>{const d=document.createElement("span");d.className="ln";d.id="l"+(i+1);
+const c=t.indexOf("//");const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+d.innerHTML="<b>"+(i+1)+"</b>"+(c>=0?esc(t.slice(0,c))+'<span class="cm">'+esc(t.slice(c))+"</span>":esc(t));code.appendChild(d)});
+let k=0,timer=null;
+function nbrs(edges){const m={};edges.forEach(([a,b])=>{(m[a]=m[a]||[]).push(b);(m[b]=m[b]||[]).push(a)});return m}
+function render(){
+const [a,b,ti,tx,call,nodes,edges,hl,hle,ghost,ok]=S[k];
+document.querySelectorAll(".ln.on").forEach(e=>e.classList.remove("on"));
+for(let i=a;i<=b;i++)$("l"+i).classList.add("on");
+$("l"+a).scrollIntoView({block:"nearest"});
+$("title").textContent=ti;$("txt").textContent=tx;$("call").textContent=call?"// "+call:"";
+let h="";
+edges.forEach(([x,y])=>{const hot=hle&&((hle[0]==x&&hle[1]==y)||(hle[0]==y&&hle[1]==x));
+h+=`<line class="ed${hot?" hl":""}" x1="${P[x][0]}" y1="${P[x][1]}" x2="${P[y][0]}" y2="${P[y][1]}"/>`});
+nodes.forEach(n=>{const c=(hl&&hl.includes(n)?" hl":"")+(ok&&ok.includes(n)?" ok":"");
+h+=`<g class="nd${c}"><circle cx="${P[n][0]}" cy="${P[n][1]}" r="26"/><text x="${P[n][0]}" y="${P[n][1]}">${n}</text></g>`});
+if(ghost)h+=`<g class="nd gh"><circle cx="${P[ghost][0]}" cy="${P[ghost][1]}" r="26"/><text x="${P[ghost][0]}" y="${P[ghost][1]}">${ghost}</text></g><text class="lbl" x="${P[ghost][0]}" y="${P[ghost][1]+46}">not in graph</text>`;
+if(!nodes.length&&!ghost)h+=`<text class="lbl" x="170" y="115">empty graph</text>`;
+$("g").innerHTML=h;
+const m=nbrs(edges);
+$("lists").innerHTML=nodes.length?"neighbors:<br>"+nodes.slice().sort().map(n=>n+" → ["+(m[n]||[]).join(", ")+"]").join("<br>"):"vertices = [ ]";
+$("ct").textContent=(k+1)+" / "+S.length;
+$("pv").disabled=k==0;$("nx").disabled=k==S.length-1;
+}
+function go(d){k=Math.max(0,Math.min(S.length-1,k+d));render()}
+$("nx").onclick=()=>go(1);$("pv").onclick=()=>go(-1);
+$("ap").onclick=()=>{if(timer){clearInterval(timer);timer=null;$("ap").textContent="Auto-play";return}
+$("ap").textContent="Pause";timer=setInterval(()=>{if(k>=S.length-1){clearInterval(timer);timer=null;$("ap").textContent="Auto-play"}else go(1)},5000)};
+document.addEventListener("keydown",e=>{if(e.key=="ArrowRight")go(1);if(e.key=="ArrowLeft")go(-1)});
+render();
+</script></body></html>
